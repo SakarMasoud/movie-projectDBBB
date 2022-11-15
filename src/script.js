@@ -13,7 +13,7 @@ async function getapi(url) {
     var d = data.results;
 
 
-    var input = document.getElementById("mySearch");
+    var input = await document.getElementById("search-container");
     input.addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -45,6 +45,23 @@ async function get_pers_api(url) {
     document.getElementById('birth').innerHTML = data.birthday;
     document.getElementById('Perspic').src = `https://image.tmdb.org/t/p/original${data.profile_path}`
 }
+
+async function get_film_api(url) {
+	
+	// Storing response
+	const response = await fetch(url);
+	
+	// Storing data in form of JSON
+	var data = await response.json();
+
+    let film = data.cast.slice(0,3)
+    console.log(film)
+    gen_films(film)
+}
+
+
+
+
 async function gen_films(n){
   console.log(n)
   var filDiv = document.getElementById("fRow");
@@ -56,8 +73,6 @@ async function gen_films(n){
           <div ><h3 class="filmname">Nothing to Show</h3></div>
       </div>
       `;
-      var filDiv = document.getElementById("fRow");
-      filDiv.replaceChildren();
       filDiv.innerHTML = f;
   }else{
       n.forEach(film => {
@@ -111,9 +126,9 @@ const movieDetails = async (movie) => {
   const movieTrailer = await fetchMovie(movie.id + "/videos");
   const movieRelated = await fetchMovie(movie.id + "/similar");
 // console.log(movieRes/production_companies/logo_path)
-console.log(movie.id)
-console.log(movieRes)
-console.log(movieCredits)
+//console.log(movie.id)
+//console.log(movieRes)
+//console.log(movieCredits)
   renderMovie(movieRes, movieCredits, movieTrailer.results ,movieRelated.results );
 };
 
@@ -244,65 +259,27 @@ const renderMovie = (movie, movieActors, videos ,related ) => {
     BACKDROP_BASE_URL + actor.profile_path
     const movieActorsDiv = document.createElement("div");
     movieActorsDiv.setAttribute("class","movieActorsDiv");
-
+    //console.log("The Films "+ actor.)
     movieActorsDiv.innerHTML = `
    <img class="actors-sigle-page m-2" src="${PROFILE_BASE_URL+ actor.profile_path}" > 
     <p id='actorsearch' class='text-slate-400 p-1  border-1 bg-black/50 rounded-lg '>${actor.name}</p>`;
-
+    
   actorList.appendChild(movieActorsDiv);
-  movieActorsDiv.addEventListener('click',function(e){
-  e.preventDefault()
-  let n = actor.known_for;
-  //console.log(elem)
-  gen_films(n);
-  let urls=`https://api.themoviedb.org/3/person/${actor.id}?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US`
-   get_pers_api(urls)
-   console.log(actor)
-   renderActors()
+
+  movieActorsDiv.addEventListener('click', function(e){
+      e.preventDefault()
+      let n = actor.known_for;
+      let filAPI = `https://api.themoviedb.org/3/person/${actor.id}/movie_credits?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US`
+      get_film_api(filAPI)
+      
+      let urls=`https://api.themoviedb.org/3/person/${actor.id}?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US`
+      get_pers_api(urls)
+      //console.log(actor)
+      renderActors()
   })
-  async function get_pers_api(urls) {
-	
-    // Storing response
-    const response = await fetch(urls);
-    
-    // Storing data in form of JSON
-    var data = await response.json();
-      console.log(data);
-      document.getElementById('name').innerHTML=data.name;
-      document.getElementById('gender').innerHTML= data.gender==1 ? "Female" : "Male";
-      document.getElementById('popularity').innerHTML= data.popularity;
-      document.getElementById('desc').innerHTML = data.biography;
-      document.getElementById('birth').innerHTML = data.birthday;
-      document.getElementById('Perspic').src = `https://image.tmdb.org/t/p/original${data.profile_path}`
-  }
-  async function gen_films(n){
-    console.log(n)
-    var filDiv = document.getElementById("fRow");
-    filDiv.replaceChildren();
-    if (n.length==0){
-        let f = `
-        <div class="film-1">
-            <img id="filmpic" src="https://i.pinimg.com/originals/90/de/0d/90de0d42ba0f52ad5b580aab9b1615f9.png"  alt="film pic" >
-            <div ><h3 class="filmname">Nothing to Show</h3></div>
-        </div>
-        `;
-        var filDiv = document.getElementById("fRow");
-        filDiv.replaceChildren();
-        filDiv.innerHTML = f;
-    }else{
-        n.forEach(film => {
-            console.log(film.title)
-            let f = `
-            <div class="film-1">
-                <img id="filmpic" src="https://i.pinimg.com/originals/90/de/0d/90de0d42ba0f52ad5b580aab9b1615f9.png"  alt="film pic" >
-                <div ><h3 class="filmname">${film.title}</h3></div>
-            </div>
-            `;
-            filDiv.innerHTML += f;
-        })
-    }
-    
-}
+
+
+
   // Calling that async function
   
 });
@@ -345,6 +322,54 @@ movieActors.crew.filter(director => director.job === 'Director').map(director =>
     relatedList.appendChild(movieRelatedDiv)
    })
     };
+
+
+
+    async function get_pers_api(urls) {
+	
+      // Storing response
+      const response = await fetch(urls);
+      
+      // Storing data in form of JSON
+      var data = await response.json();
+        //console.log(data);
+        document.getElementById('name').innerHTML=data.name;
+        document.getElementById('gender').innerHTML= data.gender==1 ? "Female" : "Male";
+        document.getElementById('popularity').innerHTML= data.popularity;
+        document.getElementById('desc').innerHTML = data.biography;
+        document.getElementById('birth').innerHTML = data.birthday;
+        document.getElementById('Perspic').src = `https://image.tmdb.org/t/p/original${data.profile_path}`
+    }
+  
+  
+    async function gen_films(n){
+      console.log(n)
+      var filDiv = await document.getElementById("fRow");
+      filDiv.replaceChildren();
+      if (n.length==0){
+          let f = `
+          <div class="film-1">
+              <img id="filmpic" src="https://i.pinimg.com/originals/90/de/0d/90de0d42ba0f52ad5b580aab9b1615f9.png"  alt="film pic" >
+              <div ><h3 class="filmname">Nothing to Show</h3></div>
+          </div>
+          `;
+          var filDiv = document.getElementById("fRow");
+          filDiv.replaceChildren();
+          filDiv.innerHTML = f;
+      }else{
+          n.forEach(film => {
+              console.log(film.title)
+              let f = `
+              <div class="film-1">
+                  <img id="filmpic" src="https://i.pinimg.com/originals/90/de/0d/90de0d42ba0f52ad5b580aab9b1615f9.png"  alt="film pic" >
+                  <div ><h3 class="filmname">${film.title}</h3></div>
+              </div>
+              `;
+              filDiv.innerHTML += f;
+          })
+      }
+  }
+  
 
 
 document.addEventListener("DOMContentLoaded", autorun);
